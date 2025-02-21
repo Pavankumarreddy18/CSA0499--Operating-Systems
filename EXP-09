@@ -1,0 +1,16 @@
+#include <stdio.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <string.h>
+
+int main() {
+    int shmid = shmget(1234, 1024, 0666 | IPC_CREAT);
+    char *str = (char *)shmat(shmid, NULL, 0);
+
+    strcpy(str, "Hello from shared memory!");
+    printf("Data written: %s\n", str);
+
+    shmdt(str);
+    shmctl(shmid, IPC_RMID, NULL);
+    return 0;
+}

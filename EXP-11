@@ -1,0 +1,31 @@
+#include <stdio.h>
+#include <windows.h>
+
+DWORD WINAPI threadFunction(LPVOID arg) {
+    int threadNumber = *((int*)arg);
+    printf("Hello from Thread %d!\n", threadNumber);
+    return 0;
+}
+
+int main() {
+    HANDLE threads[3];  // Array to hold thread handles
+    int threadArgs[3];
+
+    // Create 3 threads
+    for (int i = 0; i < 3; i++) {
+        threadArgs[i] = i + 1; // Assign thread number
+        threads[i] = CreateThread(NULL, 0, threadFunction, &threadArgs[i], 0, NULL);
+    }
+
+    // Wait for all threads to finish
+    WaitForMultipleObjects(3, threads, TRUE, INFINITE);
+
+    printf("All threads have finished execution.\n");
+
+    // Close thread handles
+    for (int i = 0; i < 3; i++) {
+        CloseHandle(threads[i]);
+    }
+
+    return 0;
+}

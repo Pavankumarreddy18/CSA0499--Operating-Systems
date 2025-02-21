@@ -1,0 +1,50 @@
+#include <stdio.h>
+#include <windows.h>
+
+#define N 5 // Number of philosophers
+
+HANDLE chopsticks[N]; // Mutexes for chopsticks
+
+DWORD WINAPI philosopher(LPVOID arg) {
+    int id = *((int*)arg);
+
+    printf("Philosopher %d is thinking.\n", id);
+    WaitForSingleObject(chopsticks[id], INFINITE);               // Pick up left chopstick
+    WaitForSingleObject(chopsticks[(id + 1) % N], INFINITE);     // Pick up right chopstick
+
+    printf("Philosopher %d is eating.\n", id);
+    Sleep(2000);  // Simulate eating time
+
+    ReleaseMutex(chopsticks[id]);               // Put down left chopstick
+    ReleaseMutex(chopsticks[(id + 1) % N]);     // Put down right chopstick
+
+    printf("Philosopher %d is done eating.\n", id);
+    return 0;
+}
+
+int main() {
+    HANDLE philosophers[N];
+    int ids[N];
+
+    // Initialize mutexes
+    for (int i = 0; i < N; i++) {
+        chopsticks[i] = CreateMutex(NULL, FALSE, NULL);
+        ids[i] = i;
+    }
+
+    // Create philosopher threads
+    for (int i = 0; i < N; i++) {
+        philosophers[i] = CreateThread(NULL, 0, philosopher, &ids[i], 0, NULL);
+    }
+
+    // Wait for all threads to finish
+    WaitForMultipleObjects(N, philosophers, TRUE, INFINITE);
+
+    // Destroy mutexes
+    for (int i = 0; i < N; i++) {
+        CloseHandle(chopsticks[i]);
+    }
+
+    printf("Dining Philosophers simulation completed.\n");
+    return 0;
+}
